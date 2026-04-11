@@ -2,110 +2,54 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>🎮 Sì Tai MineCraft | Hòm Thư Của Việt & Vân 🎮</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📬 Hòm Thư Bí Mật | Việt & Vân</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Màn hình chọn hòm thư -->
-        <div id="mailboxScreen" class="screen active">
-            <div class="mailbox-card">
-                <h1 class="main-title">🎮 MINECRAFT LETTER 🎮</h1>
-                <p class="subtitle">Chọn hòm thư để gửi/nhận thư</p>
-                <div class="mailbox-buttons">
-                    <button class="mailbox-btn" data-person="vietnam">
-                        <span class="icon">🧱</span>
-                        HÒM THƯ CỦA VIỆT
-                        <span class="icon">🧱</span>
-                    </button>
-                    <button class="mailbox-btn" data-person="van">
-                        <span class="icon">🧱</span>
-                        HÒM THƯ CỦA VÂN
-                        <span class="icon">🧱</span>
-                    </button>
-                </div>
+    <div class="container">
+        <!-- Màn hình chính dựa theo hash URL -->
+        <div id="app"></div>
+    </div>
+
+    <!-- Modal nhập mật khẩu -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔐 MỞ THƯ</h2>
+                <span class="close">&times;</span>
             </div>
-        </div>
-        
-        <!-- Màn hình nhập mật khẩu -->
-        <div id="passwordScreen" class="screen">
-            <div style="max-width: 500px; margin: 0 auto;">
-                <button class="back-btn" id="backFromPassword" style="margin-bottom: 20px;">← Quay lại</button>
+            <div class="modal-body">
+                <p id="modalHint" class="hint-text"></p>
+                <input type="password" id="modalPassword" placeholder="Nhập mật khẩu" class="password-input">
+                <div id="modalError" class="error-msg"></div>
             </div>
-            <div class="password-card">
-                <div class="person-avatar" id="passwordPersonAvatar">🧱</div>
-                <h2 id="passwordPersonName">Hòm thư của ...</h2>
-                <p class="password-hint">🔐 NHẬP MẬT KHẨU ĐỂ MỞ HÒM THƯ</p>
-                <input type="password" id="passwordInput" placeholder="MẬT KHẨU" class="password-input">
-                <button id="unlockBtn" class="unlock-btn">🔓 MỞ KHÓA</button>
-                <div id="passwordError" class="error-message"></div>
-            </div>
-        </div>
-        
-        <!-- Màn hình chính -->
-        <div id="mainScreen" class="screen">
-            <div class="main-header">
-                <button id="backToMailbox" class="back-btn">← Đổi hòm thư</button>
-                <h2 id="mainPersonName">📭 Hòm thư của ...</h2>
-                <button id="createLetterBtn" class="create-btn">✏️ Viết thư mới</button>
-            </div>
-            
-            <div class="two-column-layout">
-                <div class="letters-sidebar">
-                    <h3>📜 DANH SÁCH THƯ</h3>
-                    <div id="lettersList" class="letters-list">
-                        <div class="loading-message">🔄 Đang tải...</div>
-                    </div>
-                </div>
-                
-                <div class="letter-detail">
-                    <div id="letterView" class="letter-view">
-                        <div class="empty-letter">
-                            <div class="empty-icon">📖</div>
-                            <p>Chọn một bức thư để đọc</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal viết thư -->
-        <div id="writeModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>✏️ Viết thư mới</h2>
-                    <span class="close-modal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="letterTitle" placeholder="💌 Tiêu đề thư" class="modal-input">
-                    <input type="text" id="letterAuthor" placeholder="👤 Tên bạn" class="modal-input">
-                    <textarea id="letterContent" rows="8" placeholder="💬 Nội dung thư..." class="modal-textarea"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button id="submitLetterBtn" class="submit-btn">💌 Gửi thư</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal phản hồi -->
-        <div id="responseModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>💬 Viết phản hồi</h2>
-                    <span class="close-modal">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="responderName" placeholder="👤 Tên bạn" class="modal-input">
-                    <textarea id="responseText" rows="5" placeholder="📝 Phản hồi của bạn..." class="modal-textarea"></textarea>
-                </div>
-                <div class="modal-footer">
-                    <button id="submitResponseBtn" class="submit-btn">📨 Gửi phản hồi</button>
-                </div>
+            <div class="modal-footer">
+                <button id="submitPassword" class="minecraft-btn">MỞ THƯ</button>
             </div>
         </div>
     </div>
-    
+
+    <!-- Modal viết thư -->
+    <div id="writeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✉️ VIẾT THƯ MỚI</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="letterTitle" placeholder="Tiêu đề thư">
+                <input type="text" id="letterAuthor" placeholder="Tên người gửi">
+                <textarea id="letterContent" rows="5" placeholder="Nội dung thư..."></textarea>
+                <input type="password" id="letterPassword" placeholder="🔐 Mật khẩu cho thư này">
+                <input type="text" id="letterHint" placeholder="💡 Gợi ý mật khẩu (ví dụ: sinh nhật của em)">
+            </div>
+            <div class="modal-footer">
+                <button id="submitLetter" class="minecraft-btn">GỬI THƯ</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
