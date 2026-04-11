@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="snowflakes" id="snowflakes"></div>
     <div class="container">
         <!-- Màn hình chính dựa theo hash URL -->
         <div id="app"></div>
@@ -51,5 +52,23 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+    // Tạo hoa rơi
+    function createSnowflake() {
+        const snowflake = document.createElement('div');
+        snowflake.classList.add('snowflake');
+        const icons = ['🌸', '🌺', '🌸', '💮', '🏵️', '🌼', '🌸', '❤️', '💕', '💖', '✨', '⭐', '🌟'];
+        snowflake.textContent = icons[Math.floor(Math.random() * icons.length)];
+        snowflake.style.left = Math.random() * 100 + '%';
+        snowflake.style.fontSize = (15 + Math.random() * 25) + 'px';
+        snowflake.style.animationDuration = (3 + Math.random() * 5) + 's';
+        snowflake.style.opacity = 0.5 + Math.random() * 0.5;
+        document.getElementById('snowflakes').appendChild(snowflake);
+        setTimeout(() => snowflake.remove(), 8000);
+    }
+    setInterval(() => {
+        for (let i = 0; i < 3; i++) createSnowflake();
+    }, 300);
+</script>
 </body>
 </html>
