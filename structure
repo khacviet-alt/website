@@ -1,0 +1,11 @@
+website/
+├── public/
+│   ├── index.html       ✅ Giao diện chính
+│   ├── styles.css       ✅ Styling + hiệu ứng lá rơi
+│   └── script.js        ✅ Frontend logic
+├── server.js            ✅ Backend API
+├── package.json         ✅ Dependencies
+├── .gitignore           ✅ Git ignore
+└── data/                (Tự tạo khi chạy)
+    ├── vietnam.json     (Thư của Việt)
+    └── van.json         (Thư của Vân)
