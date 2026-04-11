@@ -1,0 +1,50 @@
+/* styles.css for warm colors and falling leaves animation */
+
+body {
+    background-color: #ffde59; /* Light Yellow */
+    color: #ff5733; /* Warm Red */
+    font-family: Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #ff4500; /* Orange Red */
+}
+
+.leaf {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #ff9800; /* Bright Orange */
+    opacity: 0.7;
+    animation: fall 5s infinite;
+}
+
+@keyframes fall {
+    0% {
+        top: -10%;
+        transform: translateX(0);
+    }
+    100% {
+        top: 100%;
+        transform: translateX(calc(50vw - 10px));
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    body {
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 601px) and (max-width: 1200px) {
+    body {
+        font-size: 16px;
+    }
+}
+
+@media (min-width: 1201px) {
+    body {
+        font-size: 18px;
+    }
+}
