@@ -1,77 +1,111 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love Mail</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🎮 Sì Tai MineCraft | Hòm Thư Của Việt & Vân 🎮</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-        }
-        h1 {
-            text-align: center;
-            margin-top: 50px;
-            color: #ff69b4;
-        }
-        .mailbox {
-            margin: 0 auto;
-            width: 300px;
-            padding: 20px;
-            border: 2px solid #ff69b4;
-            border-radius: 10px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .falling-leaves {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        .leaf {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background-color: #ffb6c1;
-            opacity: 0.8;
-            transform: rotate(45deg);
-            animation: fall linear infinite;
-        }
-        @keyframes fall {
-            0% { transform: translateY(0); } 
-            100% { transform: translateY(100vh); }
-        }
-    </style>
 </head>
 <body>
-    <div class="falling-leaves"></div>
-    <h1>Welcome to Love Mail</h1>
-    <div class="mailbox">
-        <h2>Your Mailbox</h2>
-        <form>
-            <input type="text" placeholder="Your message here" required>
-            <button type="submit">Send Love</button>
-        </form>
+    <div class="app-container">
+        <!-- Màn hình chọn hòm thư -->
+        <div id="mailboxScreen" class="screen active">
+            <div class="mailbox-card">
+                <h1 class="main-title">🎮 MINECRAFT LETTER 🎮</h1>
+                <p class="subtitle">Chọn hòm thư để gửi/nhận thư</p>
+                <div class="mailbox-buttons">
+                    <button class="mailbox-btn" data-person="vietnam">
+                        <span class="icon">🧱</span>
+                        HÒM THƯ CỦA VIỆT
+                        <span class="icon">🧱</span>
+                    </button>
+                    <button class="mailbox-btn" data-person="van">
+                        <span class="icon">🧱</span>
+                        HÒM THƯ CỦA VÂN
+                        <span class="icon">🧱</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Màn hình nhập mật khẩu -->
+        <div id="passwordScreen" class="screen">
+            <div style="max-width: 500px; margin: 0 auto;">
+                <button class="back-btn" id="backFromPassword" style="margin-bottom: 20px;">← Quay lại</button>
+            </div>
+            <div class="password-card">
+                <div class="person-avatar" id="passwordPersonAvatar">🧱</div>
+                <h2 id="passwordPersonName">Hòm thư của ...</h2>
+                <p class="password-hint">🔐 NHẬP MẬT KHẨU ĐỂ MỞ HÒM THƯ</p>
+                <input type="password" id="passwordInput" placeholder="MẬT KHẨU" class="password-input">
+                <button id="unlockBtn" class="unlock-btn">🔓 MỞ KHÓA</button>
+                <div id="passwordError" class="error-message"></div>
+            </div>
+        </div>
+        
+        <!-- Màn hình chính -->
+        <div id="mainScreen" class="screen">
+            <div class="main-header">
+                <button id="backToMailbox" class="back-btn">← Đổi hòm thư</button>
+                <h2 id="mainPersonName">📭 Hòm thư của ...</h2>
+                <button id="createLetterBtn" class="create-btn">✏️ Viết thư mới</button>
+            </div>
+            
+            <div class="two-column-layout">
+                <div class="letters-sidebar">
+                    <h3>📜 DANH SÁCH THƯ</h3>
+                    <div id="lettersList" class="letters-list">
+                        <div class="loading-message">🔄 Đang tải...</div>
+                    </div>
+                </div>
+                
+                <div class="letter-detail">
+                    <div id="letterView" class="letter-view">
+                        <div class="empty-letter">
+                            <div class="empty-icon">📖</div>
+                            <p>Chọn một bức thư để đọc</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal viết thư -->
+        <div id="writeModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>✏️ Viết thư mới</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="letterTitle" placeholder="💌 Tiêu đề thư" class="modal-input">
+                    <input type="text" id="letterAuthor" placeholder="👤 Tên bạn" class="modal-input">
+                    <textarea id="letterContent" rows="8" placeholder="💬 Nội dung thư..." class="modal-textarea"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button id="submitLetterBtn" class="submit-btn">💌 Gửi thư</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal phản hồi -->
+        <div id="responseModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>💬 Viết phản hồi</h2>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="responderName" placeholder="👤 Tên bạn" class="modal-input">
+                    <textarea id="responseText" rows="5" placeholder="📝 Phản hồi của bạn..." class="modal-textarea"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button id="submitResponseBtn" class="submit-btn">📨 Gửi phản hồi</button>
+                </div>
+            </div>
+        </div>
     </div>
-    <script>
-        // Falling Leaves Animation
-        function createLeaf() {
-            const leaf = document.createElement('div');
-            leaf.className = 'leaf';
-            leaf.style.left = Math.random() * 100 + 'vw';
-            leaf.style.animationDuration = Math.random() * 3 + 2 + 's';
-            document.querySelector('.falling-leaves').appendChild(leaf);
-            setTimeout(() => {
-                leaf.remove();
-            }, 5000);
-        }
-        setInterval(createLeaf, 500);
-    </script>
+    
+    <script src="script.js"></script>
 </body>
 </html>
