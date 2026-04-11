@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📬 Hòm Thư Bí Mật | Việt & Vân</title>
+    <title>🌸 Hòm Thư Bí Mật | Việt & Vân</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="snowflakes" id="snowflakes"></div>
+    <div class="flowers" id="flowers"></div>
+    
     <div class="container">
-        <!-- Màn hình chính dựa theo hash URL -->
         <div id="app"></div>
     </div>
 
@@ -22,7 +23,7 @@
             </div>
             <div class="modal-body">
                 <p id="modalHint" class="hint-text"></p>
-                <input type="password" id="modalPassword" placeholder="Nhập mật khẩu" class="password-input">
+                <input type="password" id="modalPassword" placeholder="Nhập mật khẩu">
                 <div id="modalError" class="error-msg"></div>
             </div>
             <div class="modal-footer">
@@ -39,36 +40,37 @@
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
-                <input type="text" id="letterTitle" placeholder="Tiêu đề thư">
-                <input type="text" id="letterAuthor" placeholder="Tên người gửi">
-                <textarea id="letterContent" rows="5" placeholder="Nội dung thư..."></textarea>
+                <input type="text" id="letterTitle" placeholder="💌 Tiêu đề thư">
+                <input type="text" id="letterAuthor" placeholder="✍️ Tên người gửi">
+                <textarea id="letterContent" rows="5" placeholder="📝 Nội dung thư..."></textarea>
                 <input type="password" id="letterPassword" placeholder="🔐 Mật khẩu cho thư này">
-                <input type="text" id="letterHint" placeholder="💡 Gợi ý mật khẩu (ví dụ: sinh nhật của em)">
+                <input type="text" id="letterHint" placeholder="💡 Gợi ý mật khẩu">
             </div>
             <div class="modal-footer">
-                <button id="submitLetter" class="minecraft-btn">GỬI THƯ</button>
+                <button id="submitLetter" class="submit-btn">💌 GỬI THƯ</button>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
     <script>
-    // Tạo hoa rơi
-    function createSnowflake() {
-        const snowflake = document.createElement('div');
-        snowflake.classList.add('snowflake');
-        const icons = ['🌸', '🌺', '🌸', '💮', '🏵️', '🌼', '🌸', '❤️', '💕', '💖', '✨', '⭐', '🌟'];
-        snowflake.textContent = icons[Math.floor(Math.random() * icons.length)];
-        snowflake.style.left = Math.random() * 100 + '%';
-        snowflake.style.fontSize = (15 + Math.random() * 25) + 'px';
-        snowflake.style.animationDuration = (3 + Math.random() * 5) + 's';
-        snowflake.style.opacity = 0.5 + Math.random() * 0.5;
-        document.getElementById('snowflakes').appendChild(snowflake);
-        setTimeout(() => snowflake.remove(), 8000);
-    }
-    setInterval(() => {
-        for (let i = 0; i < 3; i++) createSnowflake();
-    }, 300);
-</script>
+        // Tạo hoa rơi
+        function createFlower() {
+            const flower = document.createElement('div');
+            flower.classList.add('flower');
+            const icons = ['🌸', '🌸', '🌼', '💐', '🌸', '🌷', '🌺', '🌸'];
+            flower.textContent = icons[Math.floor(Math.random() * icons.length)];
+            flower.style.left = Math.random() * 100 + '%';
+            flower.style.fontSize = (12 + Math.random() * 18) + 'px';
+            flower.style.animationDuration = (4 + Math.random() * 6) + 's';
+            flower.style.opacity = 0.3 + Math.random() * 0.5;
+            document.getElementById('flowers').appendChild(flower);
+            setTimeout(() => flower.remove(), 10000);
+        }
+        setInterval(() => {
+            for (let i = 0; i < 2; i++) createFlower();
+        }, 400);
+    </script>
+
+    <script src="script.js"></script>
 </body>
 </html>
