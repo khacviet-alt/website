@@ -123,6 +123,21 @@ app.delete('/api/letter/:person/:letterId', async (req, res) => {
     res.status(500).json({ error: 'Lỗi khi xóa thư' });
   }
 });
+// API giữ MongoDB thức (không ảnh hưởng dữ liệu)
+app.get('/api/keep-alive', async (req, res) => {
+  try {
+    // Chỉ đếm số lượng thư, không trả về nội dung
+    const count = await Letter.countDocuments();
+    res.json({ 
+      status: 'ok', 
+      message: 'MongoDB is awake!', 
+      totalLetters: count,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'MongoDB connection failed' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server chạy tại: http://localhost:${PORT}`);
