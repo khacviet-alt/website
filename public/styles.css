@@ -331,3 +331,34 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #CFECF3;
 }
+/* Nút đọc và xóa */
+.read-btn, .delete-btn {
+    background: #F9B2D7;
+    border: none;
+    border-radius: 25px;
+    padding: 8px 15px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex: 1;
+}
+
+.read-btn:hover {
+    background: #CFECF3;
+    color: #F9B2D7;
+}
+
+.delete-btn {
+    background: #ff9999;
+}
+
+.delete-btn:hover {
+    background: #ff6666;
+    color: white;
+}
+
+.letter-card {
+    position: relative;
+}

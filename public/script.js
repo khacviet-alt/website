@@ -21,11 +21,11 @@ async function render() {
             <div class="letters-grid">
                 <div class="letter-card" onclick="selectPerson('vietnam')">
                     <h3>🌸 HÒM THƯ CỦA VIỆT</h3>
-                    <div class="letter-meta">Những bức thư đến từ  Việt</div>
+                    <div class="letter-meta">Những bức thư dành cho Việt</div>
                 </div>
                 <div class="letter-card" onclick="selectPerson('van')">
                     <h3>🌺 HÒM THƯ CỦA VÂN</h3>
-                    <div class="letter-meta">Những bức thư đến từ Vân</div>
+                    <div class="letter-meta">Những bức thư dành cho Vân</div>
                 </div>
             </div>
         `;
@@ -43,15 +43,19 @@ async function render() {
     app.innerHTML = `
         <button class="back-btn" onclick="goBack()">← Đổi hòm thư</button>
         <div class="header">
-            <h1>📭 HÒM THƯ ĐẾN TỪ ${personName.toUpperCase()}</h1>
+            <h1>📭 HÒM THƯ CỦA ${personName.toUpperCase()}</h1>
         </div>
         <div class="letters-grid" id="lettersGrid">
             ${letters.map(letter => `
-                <div class="letter-card" onclick="openLetterPassword(${letter.id})">
+                <div class="letter-card" data-id="${letter.id}">
                     <h3>✉️ ${escapeHtml(letter.title)}</h3>
                     <div class="letter-meta">👤 ${escapeHtml(letter.author)}</div>
                     <div class="letter-meta">📅 ${new Date(letter.createdAt).toLocaleDateString('vi-VN')}</div>
                     <div class="letter-hint">💡 Gợi ý: ${escapeHtml(letter.hint)}</div>
+                    <div style="display: flex; gap: 10px; margin-top: 12px;">
+                        <button class="read-btn" onclick="openLetterPassword(${letter.id})">📖 Đọc thư</button>
+                        <button class="delete-btn" onclick="deleteLetter(${letter.id})">🗑️ Xóa thư</button>
+                    </div>
                 </div>
             `).join('')}
         </div>
@@ -70,6 +74,29 @@ function goBack() {
     window.location.hash = '';
     currentPerson = null;
     render();
+}
+
+// Xóa thư
+async function deleteLetter(letterId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa thư này? Hành động này không thể hoàn tác!')) {
+        return;
+    }
+    
+    try {
+        const res = await fetch(`/api/letter/${currentPerson}/${letterId}`, {
+            method: 'DELETE'
+        });
+        
+        if (res.ok) {
+            alert('✅ Đã xóa thư thành công!');
+            render(); // Tải lại danh sách
+        } else {
+            const error = await res.json();
+            alert('❌ Xóa thư thất bại: ' + (error.error || 'Lỗi không xác định'));
+        }
+    } catch (err) {
+        alert('❌ Lỗi kết nối!');
+    }
 }
 
 // Mở popup nhập mật khẩu
@@ -120,7 +147,6 @@ document.getElementById('submitPassword').onclick = async () => {
             </div>
         `;
         
-        // Cuộn đến nội dung
         contentDiv.scrollIntoView({ behavior: 'smooth' });
         
     } catch (err) {
@@ -166,15 +192,22 @@ document.getElementById('submitLetter').onclick = async () => {
             body: JSON.stringify({ title, author, content, password, hint })
         });
         
+        if (res.status === 409) {
+            const error = await res.json();
+            alert(`⚠️ ${error.error}\n\n${error.message || 'Hãy thay đổi nội dung một chút.'}`);
+            return;
+        }
+        
         if (res.ok) {
             document.getElementById('writeModal').classList.remove('active');
+            alert('✅ Gửi thư thành công!');
             render(); // Tải lại danh sách thư
         } else {
             const err = await res.json();
-            alert('Lỗi: ' + (err.error || 'Không gửi được thư'));
+            alert('❌ Lỗi: ' + (err.error || 'Không gửi được thư'));
         }
     } catch (err) {
-        alert('Lỗi kết nối!');
+        alert('❌ Lỗi kết nối!');
     }
 };
 
