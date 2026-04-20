@@ -13,7 +13,7 @@ async function render() {
     const app = document.getElementById('app');
     
     if (!currentPerson) {
-        // Màn hình chọn người
+        // Màn hình chọn người (tải ngay lập tức, không chậm)
         app.innerHTML = `
             <div class="header">
                 <h1>📬 HÒM THƯ BÍ MẬT 📬</h1>
@@ -35,33 +35,69 @@ async function render() {
     // Đang ở hòm thư của Việt hoặc Vân
     const personName = currentPerson === 'vietnam' ? 'Việt' : 'Vân';
     
-    // Tải danh sách thư
-    const res = await fetch(`/api/letters/${currentPerson}`);
-    const data = await res.json();
-    letters = data.letters || [];
-    
+    // Hiển thị loading NGAY LẬP TỨC
     app.innerHTML = `
         <button class="back-btn" onclick="goBack()">← Đổi hòm thư</button>
         <div class="header">
             <h1>📭 HÒM THƯ CỦA ${personName.toUpperCase()}</h1>
         </div>
-        <div class="letters-grid" id="lettersGrid">
-            ${letters.map(letter => `
-                <div class="letter-card" data-id="${letter.id}">
-                    <h3>✉️ ${escapeHtml(letter.title)}</h3>
-                    <div class="letter-meta">👤 ${escapeHtml(letter.author)}</div>
-                    <div class="letter-meta">📅 ${new Date(letter.createdAt).toLocaleDateString('vi-VN')}</div>
-                    <div class="letter-hint">💡 Gợi ý: ${escapeHtml(letter.hint)}</div>
-                    <div style="display: flex; gap: 10px; margin-top: 12px;">
-                        <button class="read-btn" onclick="openLetterPassword(${letter.id})">📖 Đọc thư</button>
-                        <button class="delete-btn" onclick="deleteLetter(${letter.id})">🗑️ Xóa thư</button>
-                    </div>
-                </div>
-            `).join('')}
+        <div class="loading-container">
+            <div class="loading-spinner">🌸</div>
+            <div class="loading-text">Đang mở hòm thư... 🌸</div>
         </div>
-        <button class="write-btn" onclick="openWriteModal()">✏️ VIẾT THƯ MỚI</button>
+        <button class="write-btn" onclick="openWriteModal()" style="margin-top: 20px;">✏️ VIẾT THƯ MỚI</button>
         <div id="letterContentView"></div>
     `;
+    
+    // Tải dữ liệu (chạy song song, không block UI)
+    try {
+        const res = await fetch(`/api/letters/${currentPerson}`);
+        const data = await res.json();
+        letters = data.letters || [];
+        
+        // Sau khi có dữ liệu, render lại grid
+        const gridHtml = `
+            <button class="back-btn" onclick="goBack()">← Đổi hòm thư</button>
+            <div class="header">
+                <h1>📭 HÒM THƯ CỦA ${personName.toUpperCase()}</h1>
+            </div>
+            <div class="letters-grid" id="lettersGrid">
+                ${letters.length === 0 ? 
+                    '<div class="empty">📭 Chưa có thư nào. Hãy viết thư đầu tiên!</div>' : 
+                    letters.map(letter => `
+                        <div class="letter-card" data-id="${letter.id}">
+                            <h3>✉️ ${escapeHtml(letter.title)}</h3>
+                            <div class="letter-meta">👤 ${escapeHtml(letter.author)}</div>
+                            <div class="letter-meta">📅 ${new Date(letter.createdAt).toLocaleDateString('vi-VN')}</div>
+                            <div class="letter-hint">💡 Gợi ý: ${escapeHtml(letter.hint)}</div>
+                            <div style="display: flex; gap: 10px; margin-top: 12px;">
+                                <button class="read-btn" onclick="openLetterPassword(${letter.id})">📖 Đọc thư</button>
+                                <button class="delete-btn" onclick="deleteLetter(${letter.id})">🗑️ Xóa thư</button>
+                            </div>
+                        </div>
+                    `).join('')
+                }
+            </div>
+            <button class="write-btn" onclick="openWriteModal()">✏️ VIẾT THƯ MỚI</button>
+            <div id="letterContentView"></div>
+        `;
+        
+        app.innerHTML = gridHtml;
+        
+    } catch (err) {
+        app.innerHTML = `
+            <button class="back-btn" onclick="goBack()">← Đổi hòm thư</button>
+            <div class="header">
+                <h1>📭 HÒM THƯ CỦA ${personName.toUpperCase()}</h1>
+            </div>
+            <div class="error-container">
+                <div class="error-msg-large">❌ Lỗi kết nối đến server!</div>
+                <button class="retry-btn" onclick="render()">🔄 Thử lại</button>
+            </div>
+            <button class="write-btn" onclick="openWriteModal()">✏️ VIẾT THƯ MỚI</button>
+            <div id="letterContentView"></div>
+        `;
+    }
 }
 
 function selectPerson(person) {

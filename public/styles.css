@@ -362,3 +362,58 @@ body {
 .letter-card {
     position: relative;
 }
+/* Loading spinner */
+.loading-container {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 30px;
+    margin: 20px 0;
+}
+
+.loading-spinner {
+    font-size: 3rem;
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    margin-top: 15px;
+    color: #F9B2D7;
+    font-size: 1.1rem;
+}
+
+.error-container {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 30px;
+    margin: 20px 0;
+}
+
+.error-msg-large {
+    color: #ff6666;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+.retry-btn {
+    background: #F9B2D7;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 25px;
+    color: white;
+    cursor: pointer;
+}
+
+.empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+    font-size: 1.1rem;
+}
