@@ -13,7 +13,6 @@ async function render() {
     const app = document.getElementById('app');
     
     if (!currentPerson) {
-        // Màn hình chọn người (tải ngay lập tức, không chậm)
         app.innerHTML = `
             <div class="header">
                 <h1>📬 HÒM THƯ BÍ MẬT 📬</h1>
@@ -32,10 +31,9 @@ async function render() {
         return;
     }
     
-    // Đang ở hòm thư của Việt hoặc Vân
     const personName = currentPerson === 'vietnam' ? 'Việt' : 'Vân';
     
-    // Hiển thị loading NGAY LẬP TỨC
+    // Hiển thị loading
     app.innerHTML = `
         <button class="back-btn" onclick="goBack()">← Đổi hòm thư</button>
         <div class="header">
@@ -43,19 +41,17 @@ async function render() {
         </div>
         <div class="loading-container">
             <div class="loading-spinner">🌸</div>
-            <div class="loading-text">Đang mở hòm thư... 🌸</div>
+            <div class="loading-text">Đang mở hòm thư...</div>
         </div>
-        <button class="write-btn" onclick="openWriteModal()" style="margin-top: 20px;">✏️ VIẾT THƯ MỚI</button>
+        <button class="write-btn" onclick="openWriteModal()">✏️ VIẾT THƯ MỚI</button>
         <div id="letterContentView"></div>
     `;
     
-    // Tải dữ liệu (chạy song song, không block UI)
     try {
         const res = await fetch(`/api/letters/${currentPerson}`);
         const data = await res.json();
         letters = data.letters || [];
         
-        // Sau khi có dữ liệu, render lại grid
         const gridHtml = `
             <button class="back-btn" onclick="goBack()">← Đổi hòm thư</button>
             <div class="header">
@@ -125,7 +121,7 @@ async function deleteLetter(letterId) {
         
         if (res.ok) {
             alert('✅ Đã xóa thư thành công!');
-            render(); // Tải lại danh sách
+            render();
         } else {
             const error = await res.json();
             alert('❌ Xóa thư thất bại: ' + (error.error || 'Lỗi không xác định'));
@@ -171,7 +167,6 @@ document.getElementById('submitPassword').onclick = async () => {
         const data = await res.json();
         document.getElementById('passwordModal').classList.remove('active');
         
-        // Hiển thị nội dung thư
         const letter = letters.find(l => l.id === pendingLetterId);
         const contentDiv = document.getElementById('letterContentView');
         contentDiv.innerHTML = `
@@ -230,14 +225,14 @@ document.getElementById('submitLetter').onclick = async () => {
         
         if (res.status === 409) {
             const error = await res.json();
-            alert(`⚠️ ${error.error}\n\n${error.message || 'Hãy thay đổi nội dung một chút.'}`);
+            alert(`⚠️ ${error.error}\n\n${error.message}`);
             return;
         }
         
         if (res.ok) {
             document.getElementById('writeModal').classList.remove('active');
             alert('✅ Gửi thư thành công!');
-            render(); // Tải lại danh sách thư
+            render();
         } else {
             const err = await res.json();
             alert('❌ Lỗi: ' + (err.error || 'Không gửi được thư'));
@@ -271,11 +266,9 @@ function escapeHtml(str) {
     });
 }
 
-// Lắng nghe thay đổi hash
 window.addEventListener('hashchange', () => {
     currentPerson = getPersonFromHash();
     render();
 });
 
-// Khởi động
 render();

@@ -1,5 +1,6 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 
 const app = express();
@@ -9,58 +10,50 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// ==================== KẾT NỐI MONGODB ====================
-// Thay bằng connection string của bạn
-const MONGODB_URI = 'mongodb://loveletters:khacviet2007@cluster0-shard-00-00.hschcpg.mongodb.net:27017,cluster0-shard-00-01.hschcpg.mongodb.net:27017,cluster0-shard-00-02.hschcpg.mongodb.net:27017/loveletter?ssl=true&replicaSet=atlas-10gnkm-shard-0&authSource=admin&retryWrites=true&w=majority';
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ Kết nối MongoDB thành công'))
-  .catch(err => console.error('❌ Lỗi kết nối MongoDB:', err));
+// Thư mục lưu dữ liệu
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
-// ==================== ĐỊNH NGHĨA SCHEMA ====================
-const letterSchema = new mongoose.Schema({
-  id: { type: Number, unique: true },
-  title: String,
-  content: String,
-  author: String,
-  password: String,
-  hint: String,
-  createdAt: Date,
-  person: { type: String, enum: ['vietnam', 'van'] }
-});
-
-const Letter = mongoose.model('Letter', letterSchema);
-
-// ==================== API ====================
-
-// Lấy danh sách thư (không lấy nội dung và mật khẩu)
-app.get('/api/letters/:person', async (req, res) => {
-  const { person } = req.params;
-  try {
-    const letters = await Letter.find({ person }, { content: 0, password: 0 }).sort({ createdAt: -1 });
-    res.json({ letters });
-  } catch (err) {
-    res.status(500).json({ error: 'Lỗi tải danh sách thư' });
+// Hàm đọc/ghi hòm thư
+function readMailbox(person) {
+  const filePath = path.join(dataDir, `${person}.json`);
+  if (fs.existsSync(filePath)) {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   }
+  return { letters: [] };
+}
+
+function writeMailbox(person, data) {
+  const filePath = path.join(dataDir, `${person}.json`);
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+}
+
+// API lấy danh sách thư
+app.get('/api/letters/:person', (req, res) => {
+  const { person } = req.params;
+  const mailbox = readMailbox(person);
+  const safeLetters = mailbox.letters.map(({ id, title, author, hint, createdAt }) => ({
+    id, title, author, hint, createdAt
+  }));
+  res.json({ letters: safeLetters });
 });
 
-// Xác thực mật khẩu và lấy nội dung thư
-app.post('/api/letter/:person/:letterId', async (req, res) => {
+// API xác thực mật khẩu và lấy nội dung thư
+app.post('/api/letter/:person/:letterId', (req, res) => {
   const { person, letterId } = req.params;
   const { password } = req.body;
   
-  try {
-    const letter = await Letter.findOne({ person, id: parseInt(letterId) });
-    if (!letter) return res.status(404).json({ error: 'Không tìm thấy thư' });
-    if (letter.password !== password) return res.status(401).json({ error: 'Sai mật khẩu' });
-    
-    res.json({ content: letter.content });
-  } catch (err) {
-    res.status(500).json({ error: 'Lỗi xác thực thư' });
-  }
+  const mailbox = readMailbox(person);
+  const letter = mailbox.letters.find(l => l.id === parseInt(letterId));
+  
+  if (!letter) return res.status(404).json({ error: 'Không tìm thấy thư' });
+  if (letter.password !== password) return res.status(401).json({ error: 'Sai mật khẩu' });
+  
+  res.json({ content: letter.content });
 });
 
-// Tạo thư mới + kiểm tra trùng nội dung
-app.post('/api/letter/:person', async (req, res) => {
+// API tạo thư mới (có kiểm tra trùng nội dung)
+app.post('/api/letter/:person', (req, res) => {
   const { person } = req.params;
   const { title, content, author, password, hint } = req.body;
   
@@ -68,78 +61,54 @@ app.post('/api/letter/:person', async (req, res) => {
     return res.status(400).json({ error: 'Thiếu nội dung hoặc mật khẩu' });
   }
 
-  try {
-    // Kiểm tra trùng nội dung (không phân biệt hoa thường, trim khoảng trắng)
-    const normalizedContent = content.trim().toLowerCase();
-    const existingLetter = await Letter.findOne({
-      person,
-      content: { $regex: new RegExp(`^${normalizedContent}$`, 'i') }
-    });
+  const mailbox = readMailbox(person);
+  
+  // Kiểm tra trùng nội dung
+  const isDuplicate = mailbox.letters.some(letter => 
+    letter.content.trim().toLowerCase() === content.trim().toLowerCase()
+  );
 
-    if (existingLetter) {
-      return res.status(409).json({ 
-        error: 'Thư có nội dung giống hệt đã tồn tại!', 
-        message: 'Vui lòng thay đổi nội dung một chút trước khi gửi.' 
-      });
-    }
-    
-    // Tìm id lớn nhất hiện tại để tăng dần
-    const lastLetter = await Letter.findOne({ person }).sort({ id: -1 });
-    const newId = lastLetter ? lastLetter.id + 1 : 1;
-    
-    const newLetter = new Letter({
-      id: newId,
-      title: title || 'Thư không tiêu đề',
-      content: content.trim(),
-      author: author || 'Người gửi ẩn danh',
-      password: password,
-      hint: hint || 'Không có gợi ý',
-      createdAt: new Date(),
-      person: person
+  if (isDuplicate) {
+    return res.status(409).json({ 
+      error: 'Thư có nội dung giống hệt đã tồn tại!',
+      message: 'Hãy thay đổi nội dung một chút nhé!'
     });
-    
-    await newLetter.save();
-    res.json({ success: true, letter: { id: newLetter.id, title: newLetter.title } });
-    
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Lỗi khi gửi thư' });
   }
+  
+  const newLetter = {
+    id: Date.now(),
+    title: title || 'Thư không tiêu đề',
+    content: content.trim(),
+    author: author || 'Người gửi ẩn danh',
+    password: password,
+    hint: hint || 'Không có gợi ý',
+    createdAt: new Date().toISOString()
+  };
+  
+  mailbox.letters.unshift(newLetter);
+  writeMailbox(person, mailbox);
+  
+  res.json({ success: true, letter: { id: newLetter.id, title: newLetter.title } });
 });
 
-// Xóa thư
-app.delete('/api/letter/:person/:letterId', async (req, res) => {
+// API XÓA THƯ
+app.delete('/api/letter/:person/:letterId', (req, res) => {
   const { person, letterId } = req.params;
   
-  try {
-    const result = await Letter.findOneAndDelete({ person, id: parseInt(letterId) });
-    
-    if (!result) {
-      return res.status(404).json({ error: 'Không tìm thấy thư để xóa' });
-    }
-    
-    res.json({ success: true, message: 'Đã xóa thư thành công' });
-  } catch (err) {
-    res.status(500).json({ error: 'Lỗi khi xóa thư' });
+  const mailbox = readMailbox(person);
+  const initialLength = mailbox.letters.length;
+  
+  mailbox.letters = mailbox.letters.filter(l => l.id !== parseInt(letterId));
+  
+  if (mailbox.letters.length === initialLength) {
+    return res.status(404).json({ error: 'Không tìm thấy thư để xóa' });
   }
-});
-// API giữ MongoDB thức (không ảnh hưởng dữ liệu)
-app.get('/api/keep-alive', async (req, res) => {
-  try {
-    // Chỉ đếm số lượng thư, không trả về nội dung
-    const count = await Letter.countDocuments();
-    res.json({ 
-      status: 'ok', 
-      message: 'MongoDB is awake!', 
-      totalLetters: count,
-      timestamp: new Date().toISOString()
-    });
-  } catch (err) {
-    res.status(500).json({ error: 'MongoDB connection failed' });
-  }
+  
+  writeMailbox(person, mailbox);
+  res.json({ success: true, message: 'Đã xóa thư thành công' });
 });
 
 app.listen(PORT, () => {
   console.log(`🚀 Server chạy tại: http://localhost:${PORT}`);
-  console.log(`✅ Đã kết nối MongoDB Atlas`);
+  console.log(`📁 Dữ liệu lưu trong thư mục /data`);
 });
